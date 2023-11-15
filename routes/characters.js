@@ -54,4 +54,31 @@ router.get("/characters", async (req, res) => {
   }
 });
 
+//Page of one character with the comics in relation to him
+// TWO REQUESTS AXIOS
+router.get("/character/:id", async (req, res) => {
+  try {
+    console.log("inside try");
+    const { id } = req.params;
+    const response = await axios.get(
+      `https://lereacteur-marvel-api.herokuapp.com/character/${id}?apiKey=${process.env.API_KEY}`
+    );
+
+    const arrayOfComicsObj = [];
+    const array = response.data.comics;
+    for (let i = 0; i < array.length; i++) {
+      const resComic = await axios.get(
+        `https://lereacteur-marvel-api.herokuapp.com/comic/${array[i]}?apiKey=${process.env.API_KEY}`
+      );
+      arrayOfComicsObj.push(resComic.data);
+    }
+
+    response.data.comicsArray = arrayOfComicsObj;
+    console.log(arrayOfComicsObj);
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;
