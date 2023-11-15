@@ -11,30 +11,37 @@ router.get("/comics", async (req, res) => {
     //title => search a character by title
     const { title, limit, page } = req.query;
 
-    console.log("name=>", title);
+    console.log("title=>", title);
     console.log("limit=>", limit);
     console.log("page=>", page);
-    console.log(req.query);
 
     let query = "";
 
-    let pageDefault = 1;
+    const objForQuery = {};
 
     if (limit || title || page) {
       if (limit < 1 || limit > 100) {
         return res.status(400).json({ message: "Bad request" });
       }
 
-      let skip = limit * page - limit;
+      if (title) {
+        objForQuery.title = title;
+      }
+      if (limit) {
+        objForQuery.limit = limit;
+      }
+      if (page) {
+        objForQuery.skip = limit * page - limit;
+      }
+      console.log(objForQuery);
 
-      for (const key in req.query) {
-        query += `&${key}=${req.query[key]}`;
-        console.log(key, req.query[key]);
+      for (const key in objForQuery) {
+        query += `&${key}=${objForQuery[key]}`;
+        console.log(key, objForQuery[key]);
       }
     }
 
-    console.log("query=>", query);
-
+    console.log(query);
     const response = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=${process.env.API_KEY}${query}`
     );

@@ -9,22 +9,35 @@ router.get("/characters", async (req, res) => {
     //limit => between 1 and 100
     //skip => number of results to ignore
     //name => search a character by name
-    const { name, limit, skip } = req.query;
+    const { name, limit, page } = req.query;
     console.log("name=>", name);
     console.log("limit=>", limit);
-    console.log("skip=>", skip);
+    console.log("skip=>", page);
     console.log(req.query);
 
     let query = "";
 
-    if (limit || name || skip) {
+    const objForQuery = {};
+
+    if (limit || name || page) {
       if (limit < 1 || limit > 100) {
         return res.status(400).json({ message: "Bad request" });
       }
 
-      for (const key in req.query) {
-        query += `&${key}=${req.query[key]}`;
-        console.log(key, req.query[key]);
+      if (name) {
+        objForQuery.name = name;
+      }
+      if (limit) {
+        objForQuery.limit = limit;
+      }
+      if (page) {
+        objForQuery.skip = limit * page - limit;
+      }
+      console.log(objForQuery);
+
+      for (const key in objForQuery) {
+        query += `&${key}=${objForQuery[key]}`;
+        console.log(key, objForQuery[key]);
       }
     }
 
