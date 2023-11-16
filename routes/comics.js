@@ -4,6 +4,7 @@ const axios = require("axios");
 const router = express.Router();
 
 router.get("/comics", async (req, res) => {
+  console.log("INSIDE COMICS");
   try {
     //PARAMS ACCEPTED AND OPTIONAL:
     //limit => between 1 and 100

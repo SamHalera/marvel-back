@@ -3,8 +3,9 @@ const axios = require("axios");
 
 const router = express.Router();
 
-router.get("/characters", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
+    console.log("INSIDE CHARACTERS");
     //PARAMS ACCEPTED AND OPTIONAL:
     //limit => between 1 and 100
     //skip => number of results to ignore
