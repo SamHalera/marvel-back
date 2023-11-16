@@ -13,7 +13,7 @@ router.get("/", async (req, res) => {
     const { name, limit, page } = req.query;
     console.log("name=>", name);
     console.log("limit=>", limit);
-    console.log("skip=>", page);
+    console.log("page for skip=>", page);
     console.log(req.query);
 
     let query = "";
