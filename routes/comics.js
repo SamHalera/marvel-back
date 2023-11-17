@@ -20,6 +20,8 @@ router.get("/comics", async (req, res) => {
 
     // const objForQuery = {};
 
+    let limitForQuery = 100;
+
     if (limit || title || skip) {
       if (limit < 1 || limit > 100) {
         return res.status(400).json({ message: "Bad request" });
@@ -29,7 +31,9 @@ router.get("/comics", async (req, res) => {
         query += `&title=${title}`;
       }
       if (skip) {
-        query += `&skip=${skip}`;
+        let skipForQuery = skip * limitForQuery - limitForQuery;
+        console.log(skipForQuery);
+        query += `&skip=${skipForQuery}`;
       }
 
       console.log("limit typeof: ", typeof skip);

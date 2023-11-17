@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
 
     let query = "";
 
+    let limitForQuery = 100;
     if (name || limit || skip) {
       if (limit < 1 || limit > 100) {
         return res.status(400).json({ message: "Bad request" });
@@ -27,7 +28,10 @@ router.get("/", async (req, res) => {
         query += `&name=${name}`;
       }
       if (skip) {
-        query += `&skip=${skip}`;
+        let skipForQuery = skip * limitForQuery - limitForQuery;
+
+        console.log(skipForQuery);
+        query += `&skip=${skipForQuery}`;
       }
 
       console.log("limit typeof: ", typeof skip);
