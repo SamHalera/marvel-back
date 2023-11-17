@@ -1,4 +1,5 @@
 require("dotenv").config();
+const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -9,8 +10,13 @@ app.use(express.json());
 //Use routers
 const characterRoutes = require("./routes/characters");
 const comicsRoutes = require("./routes/comics");
+const userRoutes = require("./routes/user");
 app.use(characterRoutes);
 app.use(comicsRoutes);
+app.use(userRoutes);
+
+//connect to DB
+mongoose.connect(process.env.MONGODB_URI);
 
 //Deal with not found page (404)
 app.all("*", (req, res) => {

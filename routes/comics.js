@@ -10,36 +10,29 @@ router.get("/comics", async (req, res) => {
     //limit => between 1 and 100
     //skip => number of results to ignore
     //title => search a character by title
-    const { title, limit, page } = req.query;
+    const { title, limit, skip } = req.query;
 
     console.log("title=>", title);
     console.log("limit=>", limit);
-    console.log("page=>", page);
+    console.log("skip=>", skip);
 
     let query = "";
 
-    const objForQuery = {};
+    // const objForQuery = {};
 
-    if (limit || title || page) {
+    if (limit || title || skip) {
       if (limit < 1 || limit > 100) {
         return res.status(400).json({ message: "Bad request" });
       }
 
       if (title) {
-        objForQuery.title = title;
+        query += `&title=${title}`;
       }
-      if (limit) {
-        objForQuery.limit = limit;
+      if (skip) {
+        query += `&skip=${skip}`;
       }
-      if (page) {
-        objForQuery.skip = limit * page - limit;
-      }
-      console.log(objForQuery);
 
-      for (const key in objForQuery) {
-        query += `&${key}=${objForQuery[key]}`;
-        console.log(key, objForQuery[key]);
-      }
+      console.log("limit typeof: ", typeof skip);
     }
 
     console.log(query);
@@ -54,12 +47,26 @@ router.get("/comics", async (req, res) => {
 });
 
 //GET COMICS BY CHARACTHER ID
+//Page of one character with the comics in relation to him
 router.get("/comics/:characterId", async (req, res) => {
   try {
     const characterId = req.params.characterId;
     console.log(characterId);
     const response = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/comics/${characterId}?apiKey=${process.env.API_KEY}`
+    );
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+router.get("/comic/:comicId", async (req, res) => {
+  try {
+    const comicId = req.params.comicId;
+    console.log(comicId);
+    const response = await axios.get(
+      `https://lereacteur-marvel-api.herokuapp.com/comic/${comicId}?apiKey=${process.env.API_KEY}`
     );
 
     res.status(200).json(response.data);
