@@ -12,11 +12,11 @@ const router = express.Router();
 router.post("/user/signup", async (req, res) => {
   try {
     //Destructuring ==> on destructure un Objet et j'assigne la valeur de chaque clé à chaque variable créée dans les accolades
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
 
     //si username et email ne sont pas données pas l'utilisateur
     //Il faudrait "sanitize" tout ce qui est envoyé par l'utilisateur !! ==> package `dompurify`
-    if (!username || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({ message: "All fields are required!" });
     }
 
@@ -44,12 +44,11 @@ router.post("/user/signup", async (req, res) => {
     //je crée une instance de User
     const newUser = new User({
       email,
-
-      username,
-
       token,
       hash,
       salt,
+      comicsFavorites: [],
+      charactersFavorites: [],
     });
 
     await newUser.save();
@@ -57,7 +56,7 @@ router.post("/user/signup", async (req, res) => {
     res.status(201).json({
       _id: newUser._id,
       token: newUser.token,
-      username: newUser.username,
+      email: newUser.email,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -91,12 +90,11 @@ router.post("/user/login", async (req, res) => {
     }
 
     //if User is OK
+    console.log("User is OK");
     res.status(200).json({
       _id: user._id,
       token: user.token,
-      username: user.username,
-      comicsFavorites: user.comicsFavorites,
-      charactersFavorites: user.charactersFavorites,
+      email: user.email,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

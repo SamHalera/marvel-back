@@ -1,6 +1,6 @@
 const express = require("express");
 const axios = require("axios");
-
+const Favorite = require("../models/Favorite");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
@@ -43,6 +43,18 @@ router.get("/", async (req, res) => {
       `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.API_KEY}${query}`
     );
 
+    const favorites = await Favorite.find();
+
+    const characters = response.data.results;
+
+    for (let i = 0; i < favorites.length; i++) {
+      for (let j = 0; j < characters.length; j++) {
+        if (favorites[i].itemId === characters[j]._id) {
+          characters[j]["isFavorite"] = true;
+        }
+      }
+    }
+    console.log(favorites);
     // console.log(response.data);
     res.status(200).json(response.data);
   } catch (error) {

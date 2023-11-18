@@ -11,9 +11,11 @@ app.use(express.json());
 const characterRoutes = require("./routes/characters");
 const comicsRoutes = require("./routes/comics");
 const userRoutes = require("./routes/user");
+const favoritesRoutes = require("./routes/favorites");
 app.use(characterRoutes);
 app.use(comicsRoutes);
 app.use(userRoutes);
+app.use(favoritesRoutes);
 
 //connect to DB
 mongoose.connect(process.env.MONGODB_URI);
