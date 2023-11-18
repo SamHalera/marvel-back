@@ -2,14 +2,21 @@ const express = require("express");
 // const mongoose = require("mongoose");
 const axios = require("axios");
 const Favorite = require("../models/Favorite");
+const isAuthenticated = require("../middlewares/IsAuthenticated");
 
 const router = express.Router();
 
-router.get("/favorites", async (req, res) => {
+//all favorites (characters and comics)
+router.get("/favorites", isAuthenticated, async (req, res) => {
   try {
-    const favorites = await Favorite.find();
+    const favorites = await Favorite.find().populate({
+      path: "user",
+      select: "_id username email",
+    });
 
-    console.log(favorites);
+    console.log("favorite=>", favorites);
+
+    console.log("req.user=>", req.user);
 
     const responseComics = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=${process.env.API_KEY}`
@@ -18,6 +25,7 @@ router.get("/favorites", async (req, res) => {
     const responseCharacters = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.API_KEY}`
     );
+
     const comics = responseComics.data.results;
     const characters = responseCharacters.data.results;
 
@@ -26,7 +34,11 @@ router.get("/favorites", async (req, res) => {
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < characters.length; j++) {
         if (favorites[i].itemId === characters[j]._id) {
-          arrayOfFavorites.push(characters[j]);
+          if (favorites[i].user.email === req.user.email) {
+            characters[j]["label"] = "character";
+            characters[j]["user"] = favorites[i].user._id;
+            arrayOfFavorites.push(characters[j]);
+          }
         }
       }
     }
@@ -34,28 +46,46 @@ router.get("/favorites", async (req, res) => {
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < comics.length; j++) {
         if (favorites[i].itemId === comics[j]._id) {
-          arrayOfFavorites.push(comics[j]);
+          if (favorites[i].user.email === req.user.email) {
+            comics[j]["label"] = "comic";
+            comics[j]["user"] = favorites[i].user._id;
+            arrayOfFavorites.push(comics[j]);
+          }
         }
       }
     }
-    console.log(arrayOfFavorites);
+    // console.log(arrayOfFavorites);
     res.status(200).json(arrayOfFavorites);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.post("/favorites", async (req, res) => {
+//persiste a favorite (character or comics) in db
+router.post("/favorites", isAuthenticated, async (req, res) => {
   try {
     const { itemId, label } = req.body;
-    const favorite = new Favorite({
-      itemId,
-      label,
-    });
 
-    await favorite.save();
-    console.log(favorite);
-    res.status(201).json(favorite);
+    console.log("body", req.body);
+    console.log("body", req.user);
+    //Verify if item (character or comics) is already favorite, not do anything but return the item
+    const favoriteExist = await Favorite.findOne({ itemId: itemId });
+    if (favoriteExist) {
+      console.log("favorite exists already");
+      //no action on db
+      res.status(201).json({ favoriteExists: favoriteExist });
+    } else {
+      console.log("favorite does not exist", itemId + " , " + label);
+      const favorite = new Favorite({
+        itemId,
+        label,
+        user: req.user,
+      });
+
+      await favorite.save();
+      console.log("favorite here=>", favorite);
+      res.status(201).json(favorite);
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -64,7 +94,7 @@ router.post("/favorites", async (req, res) => {
 router.delete("/favorites/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const favorite = await Favorite.find({ itemId: id });
+    const favorite = await Favorite.findOne({ itemId: id });
     //si pas de favorite ==> envoi d'erreur
     if (!favorite) {
       return res.status(400).json({ error: "favorite doesn't exist!" });
@@ -72,9 +102,7 @@ router.delete("/favorites/:id", async (req, res) => {
 
     await Favorite.deleteOne({ itemId: id });
 
-    res.status(200).json(favorite);
-
-    console.log(favorite);
+    // console.log(favorite);
     res.status(201).json(favorite);
   } catch (error) {
     res.status(500).json({ message: error.message });

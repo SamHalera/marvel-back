@@ -12,11 +12,12 @@ const router = express.Router();
 router.post("/user/signup", async (req, res) => {
   try {
     //Destructuring ==> on destructure un Objet et j'assigne la valeur de chaque clé à chaque variable créée dans les accolades
-    const { email, password } = req.body;
+    const { email, password, username } = req.body;
 
+    console.log("body=>", req.body);
     //si username et email ne sont pas données pas l'utilisateur
     //Il faudrait "sanitize" tout ce qui est envoyé par l'utilisateur !! ==> package `dompurify`
-    if (!email || !password) {
+    if (!email || !password || !username) {
       return res.status(400).json({ message: "All fields are required!" });
     }
 
@@ -44,19 +45,20 @@ router.post("/user/signup", async (req, res) => {
     //je crée une instance de User
     const newUser = new User({
       email,
+      username,
       token,
       hash,
       salt,
-      comicsFavorites: [],
-      charactersFavorites: [],
     });
 
     await newUser.save();
 
+    console.log("new user:", newUser);
     res.status(201).json({
       _id: newUser._id,
       token: newUser.token,
       email: newUser.email,
+      username: newUser.username,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -66,9 +68,9 @@ router.post("/user/signup", async (req, res) => {
 //LOGIN
 router.post("/user/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!email && !password) {
+    if (!username || (!email && !password)) {
       return res.status(400).json({
         massage: "email and password are required!",
       });
@@ -95,6 +97,7 @@ router.post("/user/login", async (req, res) => {
       _id: user._id,
       token: user.token,
       email: user.email,
+      username,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

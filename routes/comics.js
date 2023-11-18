@@ -1,9 +1,10 @@
 const express = require("express");
 const axios = require("axios");
 const Favorite = require("../models/Favorite");
+const isAuthenticated = require("../middlewares/IsAuthenticated");
 const router = express.Router();
 
-router.get("/comics", async (req, res) => {
+router.get("/comics", isAuthenticated, async (req, res) => {
   console.log("INSIDE COMICS");
   try {
     //PARAMS ACCEPTED AND OPTIONAL:
@@ -45,14 +46,21 @@ router.get("/comics", async (req, res) => {
     );
     // console.log(response.data);
 
-    const favorites = await Favorite.find();
+    const favorites = await Favorite.find().populate({
+      path: "user",
+      select: "_id username email",
+    });
 
     const comics = response.data.results;
 
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < comics.length; j++) {
         if (favorites[i].itemId === comics[j]._id) {
-          comics[j]["isFavorite"] = true;
+          if (favorites[i].user.email === req.user.email) {
+            comics[j]["isFavorite"] = true;
+          } else {
+            comics[j]["isFavorite"] = false;
+          }
         }
       }
     }

@@ -7,6 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const isAuthenticated = require("./middlewares/IsAuthenticated");
+
 //Use routers
 const characterRoutes = require("./routes/characters");
 const comicsRoutes = require("./routes/comics");

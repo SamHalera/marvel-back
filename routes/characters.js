@@ -2,10 +2,13 @@ const express = require("express");
 const axios = require("axios");
 const Favorite = require("../models/Favorite");
 const router = express.Router();
+const IsAuthenticated = require("../middlewares/IsAuthenticated");
+const isAuthenticated = require("../middlewares/IsAuthenticated");
 
-router.get("/", async (req, res) => {
+router.get("/", isAuthenticated, async (req, res) => {
   try {
     console.log("INSIDE CHARACTERS");
+
     //PARAMS ACCEPTED AND OPTIONAL:
     //limit => between 1 and 100
     //skip => number of results to ignore
@@ -43,18 +46,27 @@ router.get("/", async (req, res) => {
       `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.API_KEY}${query}`
     );
 
-    const favorites = await Favorite.find();
+    const favorites = await Favorite.find().populate({
+      path: "user",
+      select: "_id username email",
+    });
 
+    console.log("favorite in characters=>", favorites);
     const characters = response.data.results;
 
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < characters.length; j++) {
         if (favorites[i].itemId === characters[j]._id) {
-          characters[j]["isFavorite"] = true;
+          if (favorites[i].user.email === req.user.email) {
+            console.log("HEY");
+            characters[j]["isFavorite"] = true;
+          } else {
+            characters[j]["isFavorite"] = false;
+          }
         }
       }
     }
-    console.log(favorites);
+
     // console.log(response.data);
     res.status(200).json(response.data);
   } catch (error) {
