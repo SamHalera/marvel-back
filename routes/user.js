@@ -10,6 +10,7 @@ const router = express.Router();
 
 //Sign Up creat new User
 router.post("/user/signup", async (req, res) => {
+  console.log(req.header);
   try {
     //Destructuring ==> on destructure un Objet et j'assigne la valeur de chaque clé à chaque variable créée dans les accolades
     const { email, password, username } = req.body;

@@ -4,14 +4,14 @@ const Favorite = require("../models/Favorite");
 const isAuthenticated = require("../middlewares/IsAuthenticated");
 const router = express.Router();
 
-router.get("/comics", isAuthenticated, async (req, res) => {
+router.get("/comics", async (req, res) => {
   console.log("INSIDE COMICS");
   try {
     //PARAMS ACCEPTED AND OPTIONAL:
     //limit => between 1 and 100
     //skip => number of results to ignore
     //title => search a character by title
-    const { title, limit, skip } = req.query;
+    const { title, limit, skip, email } = req.query;
 
     console.log("title=>", title);
     console.log("limit=>", limit);
@@ -56,7 +56,7 @@ router.get("/comics", isAuthenticated, async (req, res) => {
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < comics.length; j++) {
         if (favorites[i].itemId === comics[j]._id) {
-          if (favorites[i].user.email === req.user.email) {
+          if (favorites[i].user.email === email) {
             comics[j]["isFavorite"] = true;
           } else {
             comics[j]["isFavorite"] = false;

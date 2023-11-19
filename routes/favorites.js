@@ -7,16 +7,15 @@ const isAuthenticated = require("../middlewares/IsAuthenticated");
 const router = express.Router();
 
 //all favorites (characters and comics)
-router.get("/favorites", isAuthenticated, async (req, res) => {
+router.get("/favorites", async (req, res) => {
   try {
+    const { email } = req.query;
     const favorites = await Favorite.find().populate({
       path: "user",
       select: "_id username email",
     });
 
     console.log("favorite=>", favorites);
-
-    console.log("req.user=>", req.user);
 
     const responseComics = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/comics?apiKey=${process.env.API_KEY}`
@@ -34,7 +33,7 @@ router.get("/favorites", isAuthenticated, async (req, res) => {
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < characters.length; j++) {
         if (favorites[i].itemId === characters[j]._id) {
-          if (favorites[i].user.email === req.user.email) {
+          if (favorites[i].user.email === email) {
             characters[j]["label"] = "character";
             characters[j]["user"] = favorites[i].user._id;
             arrayOfFavorites.push(characters[j]);
@@ -46,7 +45,7 @@ router.get("/favorites", isAuthenticated, async (req, res) => {
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < comics.length; j++) {
         if (favorites[i].itemId === comics[j]._id) {
-          if (favorites[i].user.email === req.user.email) {
+          if (favorites[i].user.email === email) {
             comics[j]["label"] = "comic";
             comics[j]["user"] = favorites[i].user._id;
             arrayOfFavorites.push(comics[j]);

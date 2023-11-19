@@ -5,7 +5,7 @@ const router = express.Router();
 const IsAuthenticated = require("../middlewares/IsAuthenticated");
 const isAuthenticated = require("../middlewares/IsAuthenticated");
 
-router.get("/", isAuthenticated, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     console.log("INSIDE CHARACTERS");
 
@@ -13,12 +13,12 @@ router.get("/", isAuthenticated, async (req, res) => {
     //limit => between 1 and 100
     //skip => number of results to ignore
     //name => search a character by name
-    const { name, limit, skip } = req.query;
+    const { name, limit, skip, email } = req.query;
     console.log("name=>", name);
-
+    console.log("email:", email);
     console.log("skip for skip=>", skip);
-    console.log(req.query);
 
+    console.log("req.query:", req.query);
     let query = "";
 
     let limitForQuery = 100;
@@ -57,7 +57,7 @@ router.get("/", isAuthenticated, async (req, res) => {
     for (let i = 0; i < favorites.length; i++) {
       for (let j = 0; j < characters.length; j++) {
         if (favorites[i].itemId === characters[j]._id) {
-          if (favorites[i].user.email === req.user.email) {
+          if (favorites[i].user.email === email) {
             console.log("HEY");
             characters[j]["isFavorite"] = true;
           } else {
