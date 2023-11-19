@@ -71,22 +71,19 @@ router.post("/user/login", async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    if (!username || (!email && !password)) {
+    if (!username || !email || !password) {
       return res.status(400).json({
-        massage: "email and password are required!",
+        message: "All fields are required!",
       });
     }
     const user = await User.findOne({ email: email });
 
     if (user.email !== email) {
-      //console.log("user not");
-      return res.status(400).json({ message: "Unauthorized!" });
+      return res.status(401).json({ message: "Unauthorized!" });
     }
     //Je compare le hash du user en BD avec le hash du req.body.password + user.salt
     const newHash = SHA256(password + user.salt).toString(encBase64);
     if (newHash !== user.hash) {
-      //   console.log("password not");
-      //   console.log("hash2 =>", hash2);
       //   console.log("hash =>", user.salt);
       //statyus 401 unauthorized
       return res.status(401).json({ message: "Unauthorized!" });
@@ -105,6 +102,8 @@ router.post("/user/login", async (req, res) => {
   }
 });
 
+//This route is not used any more
+//Use post("/favorites") insted
 router.put("/favorites/:userId", async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);

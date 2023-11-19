@@ -69,7 +69,9 @@ router.post("/favorites", isAuthenticated, async (req, res) => {
     console.log("body", req.user);
     //Verify if item (character or comics) is already favorite, not do anything but return the item
     const favoriteExist = await Favorite.findOne({ itemId: itemId });
-    if (favoriteExist) {
+    if (favoriteExist && favoriteExist.user === req.user._id) {
+      console.log("user-favorite exists=>", favoriteExist.user);
+      console.log("user-from req=>", req.user._id);
       console.log("favorite exists already");
       //no action on db
       res.status(201).json({ favoriteExists: favoriteExist });

@@ -14,7 +14,7 @@ const isAuthenticated = async (req, res, next) => {
     );
     if (!user) {
       //si je trouve pas de user ==> erreur 410
-      return res.status(401).json({ error: "Unauthorized!" });
+      return res.status(401).json({ message: "Unauthorized!" });
     } else {
       //SI je trouve le user je crée une clé user dans la requete et j'envoie tout à la function suivante
       req.user = user;
@@ -22,7 +22,7 @@ const isAuthenticated = async (req, res, next) => {
     }
   } else {
     //si la requete n'envoi pas de headers avec un token
-    return res.status(401).json({ error: "Unauthorized!" });
+    return res.status(401).json({ message: "Unauthorized!" });
   }
 
   //Je vérifie si dans ma collection User, il existe un user avec la valeur du token envoyé via le headers
