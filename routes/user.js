@@ -12,38 +12,37 @@ const router = express.Router();
 router.post("/user/signup", async (req, res) => {
   console.log(req.header);
   try {
-    //Destructuring ==> on destructure un Objet et j'assigne la valeur de chaque clé à chaque variable créée dans les accolades
     const { email, password, username } = req.body;
 
     console.log("body=>", req.body);
-    //si username et email ne sont pas données pas l'utilisateur
-    //Il faudrait "sanitize" tout ce qui est envoyé par l'utilisateur !! ==> package `dompurify`
+
+    //If username or email are not filler send an error message
+    //sanitize all data sent by user ==> package `dompurify` ?
     if (!email || !password || !username) {
       return res.status(400).json({ message: "All fields are required!" });
     }
 
-    //on check si le mail d'inscription existe déjà dans la base
+    //verify if email already exists in DB
     const existingUser = await User.findOne({ email: email });
-    //si username existe en base
+    //If user exists we send an error message
     if (existingUser !== null) {
-      //409 status qui signale un conflit entre les data comparées
       return res.status(409).json({ message: "This email already exists!" });
     }
 
-    //On génère un salt avec 16 caractères
+    //create a salt of 16 characters
     const salt = uid2(16);
 
-    // o hash le paswword + le salt
+    // Create a hash with password string and sall string
     const hash = SHA256(password + salt).toString(encBase64);
 
-    //on crée un token
+    //create a token
     const token = uid2(64);
 
     // console.log(req.body);
     // console.log("salt => ", salt);
     // console.log("hash => ", hash);
 
-    //je crée une instance de User
+    //create an User instance
     const newUser = new User({
       email,
       username,
@@ -52,14 +51,15 @@ router.post("/user/signup", async (req, res) => {
       salt,
     });
 
+    //persist new user in DB
     await newUser.save();
 
     console.log("new user:", newUser);
     res.status(201).json({
       _id: newUser._id,
-      token: newUser.token,
       email: newUser.email,
       username: newUser.username,
+      token: newUser.token,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
