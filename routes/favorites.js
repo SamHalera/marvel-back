@@ -9,8 +9,8 @@ const router = express.Router();
 //all favorites (characters and comics)
 router.get("/favorites", async (req, res) => {
   try {
-    const { email } = req.query;
-    const favorites = await Favorite.find().populate({
+    const { email, id } = req.query;
+    const favorites = await Favorite.find({ user: id }).populate({
       path: "user",
       select: "_id username email",
     });
@@ -53,7 +53,7 @@ router.get("/favorites", async (req, res) => {
         }
       }
     }
-    // console.log(arrayOfFavorites);
+    console.log("arrayOfFavorites==>", arrayOfFavorites);
     res.status(200).json(arrayOfFavorites);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -66,7 +66,7 @@ router.post("/favorites", isAuthenticated, async (req, res) => {
     const { itemId, label } = req.body;
 
     console.log("body", req.body);
-    console.log("body", req.user);
+    console.log("body req user", req.user);
     //Verify if item (character or comics) is already favorite, not do anything but return the item
     const favoriteExist = await Favorite.findOne({ itemId: itemId });
     if (favoriteExist && favoriteExist.user === req.user._id) {

@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
       if (skip) {
         let skipForQuery = skip * limitForQuery - limitForQuery;
 
-        console.log(skipForQuery);
+        console.log("skipForQuery===>", skipForQuery);
         query += `&skip=${skipForQuery}`;
       }
 
