@@ -46,25 +46,27 @@ router.get("/comics", async (req, res) => {
     );
     // console.log(response.data);
 
-    const favorites = await Favorite.find().populate({
-      path: "user",
-      select: "_id username email",
-    });
+    if (email) {
+      const favorites = await Favorite.find().populate({
+        path: "user",
+        select: "_id username email",
+      });
 
-    const comics = response.data.results;
+      const comics = response.data.results;
 
-    for (let i = 0; i < favorites.length; i++) {
-      for (let j = 0; j < comics.length; j++) {
-        if (favorites[i].itemId === comics[j]._id) {
-          if (favorites[i].user.email === email) {
-            comics[j]["isFavorite"] = true;
-          } else {
-            comics[j]["isFavorite"] = false;
+      for (let i = 0; i < favorites.length; i++) {
+        for (let j = 0; j < comics.length; j++) {
+          if (favorites[i].itemId === comics[j]._id) {
+            if (favorites[i].user.email === email) {
+              comics[j]["isFavorite"] = true;
+            } else {
+              comics[j]["isFavorite"] = false;
+            }
           }
         }
       }
+      console.log(favorites);
     }
-    console.log(favorites);
 
     res.status(200).json(response.data);
   } catch (error) {

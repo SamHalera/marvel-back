@@ -69,9 +69,9 @@ router.post("/user/signup", async (req, res) => {
 //LOGIN
 router.post("/user/login", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         message: "All fields are required!",
       });
@@ -95,7 +95,7 @@ router.post("/user/login", async (req, res) => {
       _id: user._id,
       token: user.token,
       email: user.email,
-      username,
+      username: user.username,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
