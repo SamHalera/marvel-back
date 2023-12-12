@@ -100,6 +100,7 @@ router.post("/user/login", async (req, res) => {
       token: user.token,
       email: user.email,
       username: user.username,
+      avatar: user.avatar.secure_url,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -141,13 +142,14 @@ router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
           message:
             "If you want to change your password please enter a new password",
         });
-      } else if (newPassword && !password) {
+      } else if (!password && newPassword) {
         console.log("NEW PASS NO PASS");
         return res.status(400).json({
           message: "It seems you forget to enter your current password",
         });
       } else {
         if (password && newPassword) {
+          console.log("GOOD");
           const newHash = SHA256(password + user.salt).toString(encBase64);
           if (newHash !== user.hash) {
             return res.status(400).json({ message: "Invalid credentials" });
@@ -160,7 +162,7 @@ router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
         }
       }
 
-      if (req.files.picture) {
+      if (req.files) {
         console.log("REQ FILES");
         let userFolderPath;
         if (!user.avatar) {
