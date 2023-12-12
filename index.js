@@ -1,6 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
+const cloudinary = require("cloudinary").v2;
 const cors = require("cors");
 const app = express();
 
@@ -21,6 +22,14 @@ app.use(favoritesRoutes);
 
 //connect to DB
 mongoose.connect(process.env.MONGODB_URI);
+
+//connect to my cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
 
 //Deal with not found page (404)
 app.all("*", (req, res) => {
