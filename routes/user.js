@@ -152,6 +152,7 @@ router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
           console.log("GOOD");
           const newHash = SHA256(password + user.salt).toString(encBase64);
           if (newHash !== user.hash) {
+            console.log("NOOOP");
             return res.status(400).json({ message: "Invalid credentials" });
           } else {
             const salt = uid2(16);

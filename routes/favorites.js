@@ -15,6 +15,7 @@ router.get("/favorites", async (req, res) => {
       select: "_id username email",
     });
 
+    console.log("id===>", id);
     console.log("favorite=>", favorites);
 
     const responseComics = await axios.get(
