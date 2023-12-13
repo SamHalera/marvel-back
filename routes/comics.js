@@ -80,11 +80,31 @@ router.get("/comics/:characterId", async (req, res) => {
   try {
     const characterId = req.params.characterId;
     console.log(characterId);
+
+    const { userId } = req.query;
     const response = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/comics/${characterId}?apiKey=${process.env.API_KEY}`
     );
 
-    res.status(200).json(response.data);
+    console.log(userId);
+    const character = response.data;
+    if (userId) {
+      const favorite = await Favorite.findOne({
+        user: userId,
+        itemId: characterId,
+      }).populate({
+        path: "user",
+        select: "_id username email",
+      });
+
+      console.log("favorite===>", favorite);
+      if (favorite) {
+        character["isFavorite"] = true;
+      }
+    }
+
+    console.log("charcter==>", character);
+    res.status(200).json(character);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -93,11 +113,28 @@ router.get("/comic/:comicId", async (req, res) => {
   try {
     const comicId = req.params.comicId;
     console.log(comicId);
+    const { userId } = req.query;
     const response = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/comic/${comicId}?apiKey=${process.env.API_KEY}`
     );
+    const comic = response.data;
+    if (userId) {
+      const favorite = await Favorite.findOne({
+        user: userId,
+        itemId: comicId,
+      }).populate({
+        path: "user",
+        select: "_id username email",
+      });
 
-    res.status(200).json(response.data);
+      console.log("favorite===>", favorite);
+      if (favorite) {
+        comic["isFavorite"] = true;
+      }
+    }
+
+    console.log("comic==>", comic);
+    res.status(200).json(comic);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

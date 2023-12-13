@@ -95,9 +95,11 @@ router.post("/favorites", isAuthenticated, async (req, res) => {
 router.delete("/favorites/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("id==>", id);
     const favorite = await Favorite.findOne({ itemId: id });
     //si pas de favorite ==> envoi d'erreur
     if (!favorite) {
+      console.log("ici");
       return res.status(400).json({ error: "favorite doesn't exist!" });
     }
 
