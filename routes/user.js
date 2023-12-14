@@ -5,6 +5,10 @@ const User = require("../models/User");
 const uid2 = require("uid2");
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
+const fileUpload = require("express-fileupload");
+const cloudinary = require("cloudinary").v2;
+const isAuthenticated = require("../middlewares/IsAuthenticated");
+const convertToBase64 = require("../utilis/convertToBase64");
 
 const router = express.Router();
 
@@ -69,9 +73,9 @@ router.post("/user/signup", async (req, res) => {
 //LOGIN
 router.post("/user/login", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !email || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         message: "All fields are required!",
       });
@@ -95,8 +99,110 @@ router.post("/user/login", async (req, res) => {
       _id: user._id,
       token: user.token,
       email: user.email,
-      username,
+      username: user.username,
+      avatar: user.avatar.secure_url,
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//GET USER FROM ID
+router.get("/profile", isAuthenticated, async (req, res) => {
+  try {
+    const user = await User.findById({ _id: req.user._id }).select(
+      "username _id email avatar"
+    );
+
+    return res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//UPDATE USER INFOS (picture, username, password)
+router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
+  const { username, password, newPassword } = req.body;
+
+  console.log("body===>", req.body);
+  console.log("req.files==>", req.files);
+  try {
+    const user = await User.findById({ _id: req.user._id });
+
+    //if we detect changes in request we pass throught all checks and finally we save the new user
+    if (username || (password && newPassword) || req.files) {
+      console.log("INSIDE");
+      if (username) {
+        console.log("USERNAME");
+        user.username = username;
+      }
+      if (password && !newPassword) {
+        console.log("PASS NO NEWPASS");
+        return res.status(400).json({
+          message:
+            "If you want to change your password please enter a new password",
+        });
+      } else if (!password && newPassword) {
+        console.log("NEW PASS NO PASS");
+        return res.status(400).json({
+          message: "It seems you forget to enter your current password",
+        });
+      } else {
+        if (password && newPassword) {
+          console.log("GOOD");
+          const newHash = SHA256(password + user.salt).toString(encBase64);
+          if (newHash !== user.hash) {
+            console.log("NOOOP");
+            return res.status(400).json({ message: "Invalid credentials" });
+          } else {
+            const salt = uid2(16);
+            const hash = SHA256(newPassword + salt).toString(encBase64);
+            user.salt = salt;
+            user.hash = hash;
+          }
+        }
+      }
+
+      if (req.files) {
+        console.log("REQ FILES");
+        let userFolderPath;
+        if (!user.avatar) {
+          console.log("AVATAR YET");
+          //create folder for marvel project > users
+          const userFolder = await cloudinary.api.create_folder(
+            `/marvel/users/${user._id}`
+          );
+          userFolderPath = userFolder.path;
+        } else {
+          const userFolder = `/marvel/users/${user._id}`;
+          userFolderPath = userFolder;
+        }
+
+        console.log("folder path==>", userFolderPath);
+        //Tranformation de l'image en string avant save sur cloudinary
+        const pictureToUpload = req.files.picture;
+        const transformedPicture = convertToBase64(pictureToUpload);
+        //console.log(pictureToUpload);
+
+        const pictureToSave = await cloudinary.uploader.upload(
+          transformedPicture,
+          { folder: userFolderPath }
+        );
+
+        //if user has already a picture we keep its public_id in order to delete it after uploading the new one
+        const previousPublicId = user.avatar.public_id;
+
+        //new picture replaced the previous for user object
+        user.avatar = pictureToSave;
+
+        //New picture is uploaded with success in CLoudinary. We can delete the old one
+        await cloudinary.uploader.destroy(previousPublicId, {
+          folder: userFolderPath,
+        });
+      }
+      await user.save();
+    }
+    return res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -5,7 +5,7 @@ const router = express.Router();
 const IsAuthenticated = require("../middlewares/IsAuthenticated");
 const isAuthenticated = require("../middlewares/IsAuthenticated");
 
-router.get("/", async (req, res) => {
+router.get("/characters", async (req, res) => {
   try {
     console.log("INSIDE CHARACTERS");
 
@@ -46,22 +46,24 @@ router.get("/", async (req, res) => {
       `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.API_KEY}${query}`
     );
 
-    const favorites = await Favorite.find().populate({
-      path: "user",
-      select: "_id username email",
-    });
+    if (email) {
+      const favorites = await Favorite.find().populate({
+        path: "user",
+        select: "_id username email",
+      });
 
-    console.log("favorite in characters=>", favorites);
-    const characters = response.data.results;
+      console.log("favorite in characters=>", favorites);
+      const characters = response.data.results;
 
-    for (let i = 0; i < favorites.length; i++) {
-      for (let j = 0; j < characters.length; j++) {
-        if (favorites[i].itemId === characters[j]._id) {
-          if (favorites[i].user.email === email) {
-            console.log("HEY");
-            characters[j]["isFavorite"] = true;
-          } else {
-            characters[j]["isFavorite"] = false;
+      for (let i = 0; i < favorites.length; i++) {
+        for (let j = 0; j < characters.length; j++) {
+          if (favorites[i].itemId === characters[j]._id) {
+            if (favorites[i].user.email === email) {
+              console.log("HEY");
+              characters[j]["isFavorite"] = true;
+            } else {
+              characters[j]["isFavorite"] = false;
+            }
           }
         }
       }
