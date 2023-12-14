@@ -5,7 +5,7 @@ const router = express.Router();
 const IsAuthenticated = require("../middlewares/IsAuthenticated");
 const isAuthenticated = require("../middlewares/IsAuthenticated");
 
-router.get("/", async (req, res) => {
+router.get("/characters", async (req, res) => {
   try {
     console.log("INSIDE CHARACTERS");
 
