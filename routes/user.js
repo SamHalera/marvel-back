@@ -75,21 +75,25 @@ router.post("/user/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("body===>", req.body);
+    console.log("email===>", email);
     if (!email || !password) {
       return res.status(400).json({
         message: "All fields are required!",
       });
     }
+    console.log("email befor find===>", email);
     const user = await User.findOne({ email: email });
 
-    if (user.email !== email) {
+    console.log("after find===>", email);
+    if (user === null) {
+      console.log("email dans if===>", email);
       return res.status(401).json({ message: "Unauthorized!" });
     }
+    console.log("email out of if===>", email);
     //Je compare le hash du user en BD avec le hash du req.body.password + user.salt
     const newHash = SHA256(password + user.salt).toString(encBase64);
     if (newHash !== user.hash) {
-      //   console.log("hash =>", user.salt);
+      console.log("hash =>", user.salt);
       //statyus 401 unauthorized
       return res.status(401).json({ message: "Unauthorized!" });
     }
