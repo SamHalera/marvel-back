@@ -16,10 +16,12 @@ const characterRoutes = require("./routes/characters");
 const comicsRoutes = require("./routes/comics");
 const userRoutes = require("./routes/user");
 const favoritesRoutes = require("./routes/favorites");
+const testApiRoutes = require("./routes/testApi");
 app.use(characterRoutes);
 app.use(comicsRoutes);
 app.use(userRoutes);
 app.use(favoritesRoutes);
+app.use(testApiRoutes);
 
 //connect to DB
 mongoose.connect(process.env.MONGODB_URI);
