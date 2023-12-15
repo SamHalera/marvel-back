@@ -105,7 +105,7 @@ router.post("/user/login", async (req, res) => {
       token: user.token,
       email: user.email,
       username: user.username,
-      avatar: user.avatar.secure_url,
+      avatar: user.avatar?.secure_url,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
