@@ -176,10 +176,12 @@ router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
         if (!user.avatar) {
           console.log("no avatar yet");
           //create folder for marvel project > users
+          console.log("user id---->", user._id);
           const userFolder = await cloudinary.api.create_folder(
             `/marvel/users/${user._id}`
           );
           userFolderPath = userFolder.path;
+          console.log("folder path inside if==>", userFolderPath);
         } else {
           console.log("yes avatar");
           const userFolder = `/marvel/users/${user._id}`;
