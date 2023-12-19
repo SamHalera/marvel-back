@@ -171,14 +171,17 @@ router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
       if (req.files) {
         let userFolderPath;
         let previousPublicId;
+        console.log("ICI");
 
         if (!user.avatar) {
+          console.log("no avatar yet");
           //create folder for marvel project > users
           const userFolder = await cloudinary.api.create_folder(
             `/marvel/users/${user._id}`
           );
           userFolderPath = userFolder.path;
         } else {
+          console.log("yes avatar");
           const userFolder = `/marvel/users/${user._id}`;
           userFolderPath = userFolder;
           //if user has already a picture we keep its public_id in order to delete it after uploading the new one
@@ -199,6 +202,7 @@ router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
         //new picture replaced the previous for user object
         user.avatar = pictureToSave;
 
+        console.log("user avatar==>", user.avatar);
         //New picture is uploaded with success in CLoudinary. We can delete the old one
         if (previousPublicId) {
           await cloudinary.uploader.destroy(previousPublicId, {
